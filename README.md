@@ -31,6 +31,122 @@
 $ pnpm install
 ```
 
+## Database Setup
+
+### Prerequisites
+
+- PostgreSQL installed and running on your system
+- Database credentials (host, port, username, password, database name)
+
+### Environment Variables
+
+Create a `.env` file in the root directory with the following database configuration:
+
+```env
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+DB_DATABASE=mboka_ride
+DB_SYNCHRONIZE=false
+
+# Environment
+NODE_ENV=development
+```
+
+**Important Notes:**
+- `DB_SYNCHRONIZE` should be `false` in production to prevent accidental schema changes
+- In development, you can set `DB_SYNCHRONIZE=true` to auto-sync schema (not recommended for production)
+- For production environments, SSL is automatically enabled
+
+### Database Initialization
+
+1. **Create the database** (if it doesn't exist):
+   ```bash
+   # Connect to PostgreSQL
+   psql -U postgres
+   
+   # Create database
+   CREATE DATABASE mboka_ride;
+   ```
+
+2. **Run migrations** to set up the schema:
+   ```bash
+   $ pnpm run migration:run
+   ```
+
+### TypeORM Commands
+
+The following scripts are available for database management:
+
+#### Migrations
+
+- **Generate a new migration**:
+  ```bash
+  $ pnpm run migration:generate src/migrations/MigrationName
+  ```
+
+- **Run pending migrations**:
+  ```bash
+  $ pnpm run migration:run
+  ```
+
+- **Revert last migration**:
+  ```bash
+  $ pnpm run migration:revert
+  ```
+
+- **Show migration status**:
+  ```bash
+  $ pnpm run migration:show
+  ```
+
+#### Schema Operations
+
+- **Synchronize schema** (Development only - auto-creates tables based on entities):
+  ```bash
+  $ pnpm run schema:sync
+  ```
+
+- **Drop entire schema**:
+  ```bash
+  $ pnpm run schema:drop
+  ```
+
+### Development vs Production
+
+**Development:**
+- `NODE_ENV=development`
+- `DB_SYNCHRONIZE` can be set to `true` for rapid prototyping (use with caution)
+- SQL queries are logged to console
+- SSL is disabled by default
+
+**Production:**
+- `NODE_ENV=production`
+- `DB_SYNCHRONIZE` must be `false` (always use migrations)
+- SQL logging is disabled
+- SSL is automatically enabled
+
+### Creating Entities
+
+Entities should be placed in the `src/modules` directory with the `.entity.ts` extension. Example:
+
+```typescript
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+
+@Entity()
+export class User {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  name: string;
+}
+```
+
+TypeORM will automatically discover entities matching the pattern `**/*.entity{.ts,.js}`.
+
 ## Compile and run the project
 
 ```bash
