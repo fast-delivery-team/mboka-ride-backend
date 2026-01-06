@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './modules/user/user.module';
 import databaseConfig, { getConfig } from './config/database/database.config';
 import { DatabaseConfig } from './config/database/database-config.types';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { DatabaseConfig } from './config/database/database-config.types';
       useFactory: (): DatabaseConfig => getConfig(),
     }),
     UserModule,
+    AuthModule,
   ],
 })
 export class AppModule {}
