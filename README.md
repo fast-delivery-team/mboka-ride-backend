@@ -56,6 +56,7 @@ NODE_ENV=development
 ```
 
 **Important Notes:**
+
 - `DB_SYNCHRONIZE` should be `false` in production to prevent accidental schema changes
 - In development, you can set `DB_SYNCHRONIZE=true` to auto-sync schema (not recommended for production)
 - For production environments, SSL is automatically enabled
@@ -63,10 +64,11 @@ NODE_ENV=development
 ### Database Initialization
 
 1. **Create the database** (if it doesn't exist):
+
    ```bash
    # Connect to PostgreSQL
    psql -U postgres
-   
+
    # Create database
    CREATE DATABASE mboka_ride;
    ```
@@ -83,16 +85,19 @@ The following scripts are available for database management:
 #### Migrations
 
 - **Generate a new migration**:
+
   ```bash
   $ pnpm run migration:generate src/migrations/MigrationName
   ```
 
 - **Run pending migrations**:
+
   ```bash
   $ pnpm run migration:run
   ```
 
 - **Revert last migration**:
+
   ```bash
   $ pnpm run migration:revert
   ```
@@ -105,6 +110,7 @@ The following scripts are available for database management:
 #### Schema Operations
 
 - **Synchronize schema** (Development only - auto-creates tables based on entities):
+
   ```bash
   $ pnpm run schema:sync
   ```
@@ -117,12 +123,14 @@ The following scripts are available for database management:
 ### Development vs Production
 
 **Development:**
+
 - `NODE_ENV=development`
 - `DB_SYNCHRONIZE` can be set to `true` for rapid prototyping (use with caution)
 - SQL queries are logged to console
 - SSL is disabled by default
 
 **Production:**
+
 - `NODE_ENV=production`
 - `DB_SYNCHRONIZE` must be `false` (always use migrations)
 - SQL logging is disabled
@@ -133,10 +141,10 @@ The following scripts are available for database management:
 Entities should be placed in the `src/modules` directory with the `.entity.ts` extension. Example:
 
 ```typescript
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, BaseEntity } from 'typeorm';
 
 @Entity()
-export class User {
+export class User extend BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
