@@ -5,6 +5,7 @@ import { UserModule } from './modules/user/user.module';
 import databaseConfig, { getConfig } from './config/database/database.config';
 import { DatabaseConfig } from './config/database/database-config.types';
 import { AuthModule } from './modules/auth/auth.module';
+import { IntegrationRequestModule } from './modules/integration-request/integration-request.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AuthModule } from './modules/auth/auth.module';
     }),
     UserModule,
     AuthModule,
+    IntegrationRequestModule,
   ],
 })
 export class AppModule {}
