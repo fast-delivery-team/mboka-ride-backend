@@ -26,6 +26,12 @@ export enum EnergyType {
     REJECTED = 'rejected',
 }
 
+export enum IntegrationStep {
+    IDENTITY = 'identity',
+    VEHICLE = 'vehicle',
+    DOCUMENTS = 'documents',
+}
+  
 @Entity()
 export class VehicleIntegrationRequest extends BaseEntity {
     @PrimaryGeneratedColumn()
@@ -45,75 +51,82 @@ export class VehicleIntegrationRequest extends BaseEntity {
     })
     status: RequestStatus;
 
-    @Column({ default: false })
+    @Column({ default: false, nullable: true })
     isFirstRequest: boolean;
 
     @Column({
         type: 'enum',
         enum: DocumentType,
+        nullable: true,
     })
     documentType: DocumentType;
 
-    @Column({ type: 'json' })
+    @Column({ nullable: true })
+    documentTypeNumber: string;
+
+    @Column({ type: 'json', nullable: true })
     identityFiles: string[];
 
-    @Column({ type: 'date' })
+    @Column({ type: 'date', nullable: true })
     identityFilesExpirationDate: Date;
 
-    @Column()
+    @Column({ unique: true, nullable: true })
     registrationNumber: string;
 
-    @Column()
+    @Column({ unique: true })
     vin: string;
 
-    @Column()
+    @Column({ nullable: true })
     brand: string;
 
-    @Column()
+    @Column({ nullable: true })
     model: string;
 
-    @Column({ type: 'integer' })
+    @Column({ type: 'integer', nullable: true })
     year: number;
 
     @Column({ type: 'enum', enum: VehicleType, nullable: true })
     vehicleType: VehicleType;
 
-    @Column({ type: 'integer' })
+    @Column({ type: 'integer', nullable: true })
     seats: number;
 
-    @Column({ type: 'enum', enum: EnergyType })
+    @Column({ type: 'enum', enum: EnergyType, nullable: true })
     energy: EnergyType;
 
-    @Column()
+    @Column({ nullable: true })
     color: string;
 
-    @Column({ type: 'boolean', default: true })
+    @Column({ type: 'boolean', default: true, nullable: true })
     exclusiveDriving: boolean;
 
-    @Column({ type: 'json' })
+    @Column({ type: 'json', nullable: true })
     registrationCardFiles: string[];
 
-    @Column({ type: 'json' })
+    @Column({ type: 'json', nullable: true })
     insuranceFiles: string[];
 
-    @Column({ type: 'date' })
+    @Column({ type: 'date', nullable: true })
     insuranceExpirationDate: Date;
 
-    @Column({ type: 'json' })
+    @Column({ type: 'json', nullable: true })
     technicalInspectionFiles: string[];
 
-    @Column({ type: 'date' })
+    @Column({ type: 'date', nullable: true })
     technicalInspectionExpirationDate: Date;
 
-    @Column({ type: 'json' })
+    @Column({ type: 'json', nullable: true })
     photos: string[];
+
+    @Column({ type: 'enum', enum: IntegrationStep, default: IntegrationStep.IDENTITY })
+    currentStep: IntegrationStep;
 
     @CreateDateColumn()
     createdAt: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({ nullable: true })
     updatedAt: Date;
 
-    @DeleteDateColumn()
+    @DeleteDateColumn({ nullable: true })
     deletedAt: Date;
 }
