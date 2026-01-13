@@ -56,7 +56,7 @@ const parsedEnv = ()=>{
     try {
         return v.parse(envSchema, {
             NODE_ENV: process.env.NODE_ENV,
-            PORT: process.env.PORT,
+            PORT: Number(process.env.PORT),
             CORS_ORIGIN: process.env.CORS_ORIGIN,
             DB_HOSTNAME: process.env.DB_HOSTNAME,
             DB_PORT: process.env.DB_PORT,
