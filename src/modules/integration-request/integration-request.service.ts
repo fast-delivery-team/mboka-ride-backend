@@ -76,13 +76,15 @@ export class IntegrationRequestService {
         return this.vehicleIntegrationRequestRepository.save(request);
     }
     async completeVehicleStep(
-        requestId: number,
+        userId: number,
         dto: VehicleStepDto,
       ) {
-        const request = await this.vehicleIntegrationRequestRepository.findOneBy({ id: requestId });
-        if (!request) throw new NotFoundException();
+
+        await this.userService.findOneByUserId(userId);
+        const existingRequestForUser = await this.vehicleIntegrationRequestRepository.findOneBy({ userId });
+        if (!existingRequestForUser) throw new NotFoundException('Cette utilisateur n\'a pas de demande de véhicule en cours');
       
-        if (request.currentStep !== IntegrationStep.IDENTITY) {
+        if (existingRequestForUser.currentStep !== IntegrationStep.IDENTITY) {
           throw new BadRequestException('Étape véhicule non autorisée');
         }
       
@@ -92,31 +94,32 @@ export class IntegrationRequestService {
         );
         if (duplicate) throw new ConflictException('Véhicule déjà enregistré');
       
-        Object.assign(request, dto);
-        this.validateStepCompletion(request, IntegrationStep.VEHICLE);
+        Object.assign(existingRequestForUser, dto);
+        this.validateStepCompletion(existingRequestForUser, IntegrationStep.VEHICLE);
       
-        request.currentStep = IntegrationStep.VEHICLE;
+        existingRequestForUser.currentStep = IntegrationStep.VEHICLE;
       
-        return this.vehicleIntegrationRequestRepository.save(request);
+        return this.vehicleIntegrationRequestRepository.save(existingRequestForUser);
     }
       
     async completeDocumentsStep(
-        requestId: number,
+        userId: number,
         dto: DocumentsStepDto,
       ) {
-        const request = await this.vehicleIntegrationRequestRepository.findOneBy({ id: requestId });
-        if (!request) throw new NotFoundException();
+        await this.userService.findOneByUserId(userId);
+        const existingRequestForUser = await this.vehicleIntegrationRequestRepository.findOneBy({ userId });
+        if (!existingRequestForUser) throw new NotFoundException('Cette utilisateur n\'a pas de demande de véhicule en cours');
       
-        if (request.currentStep !== IntegrationStep.VEHICLE) {
+        if (existingRequestForUser.currentStep !== IntegrationStep.VEHICLE) {
           throw new BadRequestException('Étape documents non autorisée');
         }
       
-        Object.assign(request, dto);
-        this.validateStepCompletion(request, IntegrationStep.DOCUMENTS);
+        Object.assign(existingRequestForUser, dto);
+        this.validateStepCompletion(existingRequestForUser, IntegrationStep.DOCUMENTS);
       
-        request.currentStep = IntegrationStep.DOCUMENTS;
-        request.status = RequestStatus.PENDING;
+        existingRequestForUser.currentStep = IntegrationStep.DOCUMENTS;
+        existingRequestForUser.status = RequestStatus.PENDING;
       
-        return this.vehicleIntegrationRequestRepository.save(request);
+        return this.vehicleIntegrationRequestRepository.save(existingRequestForUser);
     }
 }

@@ -15,12 +15,14 @@ export class IntegrationRequestController {
   }
 
   @Post('/vehicle/vehicle-step')
-  async completeVehicleStep(@Body() dto: VehicleStepDto, @Req() _req: any, @Param('requestId') requestId: number) {
-    return this.integrationRequestService.completeVehicleStep(requestId, dto);
+  async completeVehicleStep(@Body() dto: VehicleStepDto, @Req() req: any) {
+    const userId = req.user.id as number;
+    return this.integrationRequestService.completeVehicleStep(userId, dto);
   }
 
   @Post('/vehicle/documents-step')
-  async completeDocumentsStep(@Body() dto: DocumentsStepDto, @Req() _req: any, @Param('requestId') requestId: number) {
-    return this.integrationRequestService.completeDocumentsStep(requestId, dto);
+  async completeDocumentsStep(@Body() dto: DocumentsStepDto, @Req() req: any) {
+    const userId = req.user.id as number;
+    return this.integrationRequestService.completeDocumentsStep(userId, dto);
   }
 }
