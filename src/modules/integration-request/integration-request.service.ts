@@ -1,14 +1,19 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { IntegrationStep, VehicleIntegrationRequest } from './entities/vehicle-integration-request.entity';
+import { IntegrationStep, RequestStatus, VehicleIntegrationRequest } from './entities/vehicle-integration-request.entity';
+import { IdentityStepDto } from './dto/identity-step-dto';
 
+import { UserService } from '../user/user.service';
+import { VehicleStepDto } from './dto/vehicle-step-dto';
+import { DocumentsStepDto } from './dto/documents-step-dto';
 
 @Injectable()
 export class IntegrationRequestService {
 
     constructor(
         @InjectRepository(VehicleIntegrationRequest) private readonly vehicleIntegrationRequestRepository: Repository<VehicleIntegrationRequest>,
+        private readonly userService: UserService,  
     ) {}
 
     private validateStepCompletion(
@@ -32,7 +37,7 @@ export class IntegrationRequestService {
             throw new BadRequestException('Étape documents incomplète');
           }
         }
-      }
+    }
 
     async findDuplicateVehicleIntegrationRequest(registrationNumber?: string, vin?: string, documentTypeNumber?: string) {
 
@@ -53,5 +58,65 @@ export class IntegrationRequestService {
         });
     }
 
-
+    async createIntegration(dto: IdentityStepDto, userId: number) {
+        const user = await this.userService.findById(userId);
+        if (!user) throw new NotFoundException();
+      
+        const request = this.vehicleIntegrationRequestRepository.create({
+          userId,
+          ...dto,
+          identityFilesExpirationDate: new Date(dto.identityFilesExpirationDate),
+          currentStep: IntegrationStep.IDENTITY,
+          status: RequestStatus.DRAFT,
+          isFirstRequest: true,
+        });
+      
+        this.validateStepCompletion(request, IntegrationStep.IDENTITY);
+      
+        return this.vehicleIntegrationRequestRepository.save(request);
+    }
+    async completeVehicleStep(
+        requestId: number,
+        dto: VehicleStepDto,
+      ) {
+        const request = await this.vehicleIntegrationRequestRepository.findOneBy({ id: requestId });
+        if (!request) throw new NotFoundException();
+      
+        if (request.currentStep !== IntegrationStep.IDENTITY) {
+          throw new BadRequestException('Étape véhicule non autorisée');
+        }
+      
+        const duplicate = await this.findDuplicateVehicleIntegrationRequest(
+          dto.registrationNumber,
+          dto.vin,
+        );
+        if (duplicate) throw new ConflictException('Véhicule déjà enregistré');
+      
+        Object.assign(request, dto);
+        this.validateStepCompletion(request, IntegrationStep.VEHICLE);
+      
+        request.currentStep = IntegrationStep.VEHICLE;
+      
+        return this.vehicleIntegrationRequestRepository.save(request);
+    }
+      
+    async completeDocumentsStep(
+        requestId: number,
+        dto: DocumentsStepDto,
+      ) {
+        const request = await this.vehicleIntegrationRequestRepository.findOneBy({ id: requestId });
+        if (!request) throw new NotFoundException();
+      
+        if (request.currentStep !== IntegrationStep.VEHICLE) {
+          throw new BadRequestException('Étape documents non autorisée');
+        }
+      
+        Object.assign(request, dto);
+        this.validateStepCompletion(request, IntegrationStep.DOCUMENTS);
+      
+        request.currentStep = IntegrationStep.DOCUMENTS;
+        request.status = RequestStatus.PENDING;
+      
+        return this.vehicleIntegrationRequestRepository.save(request);
+    }
 }
