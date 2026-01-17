@@ -4,7 +4,10 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtRefreshGuard } from './strategy/jwt-refresh.guard';
 import { RefreshTokenDto } from './dto/refresh.dto';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 
+@UseGuards(ThrottlerGuard)
+@Throttle({ default: { ttl: 60000, limit: 2 } })
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
