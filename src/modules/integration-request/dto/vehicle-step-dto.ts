@@ -1,4 +1,4 @@
-import { IsEnum, IsString, Matches } from "class-validator";
+import { IsBoolean, IsEnum, IsString, Matches } from "class-validator";
 
 import { IsInt } from "class-validator";
 import { EnergyType, VehicleType } from "../entities/vehicle-integration-request.entity";
@@ -28,5 +28,11 @@ import { EnergyType, VehicleType } from "../entities/vehicle-integration-request
   
     @IsEnum(EnergyType)
     energy: EnergyType;
+
+    @IsString()
+    color: string;
+
+    @IsBoolean()
+    exclusiveDriving: boolean;
   }
   

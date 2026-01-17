@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { IntegrationRequestService } from './integration-request.service';
 import { IdentityStepDto } from './dto/identity-step-dto';
 import { DocumentsStepDto } from './dto/documents-step-dto';
@@ -16,13 +16,13 @@ export class IntegrationRequestController {
     return this.integrationRequestService.createIntegration(dto, userId);
   }
 
-  @Post('/vehicle/vehicle-step')
+  @Put('/vehicle/vehicle-step')
   async completeVehicleStep(@Body() dto: VehicleStepDto, @Req() req: any) {
     const userId = req.user.id as number;
     return this.integrationRequestService.completeVehicleStep(userId, dto);
   }
 
-  @Post('/vehicle/documents-step')
+  @Put('/vehicle/documents-step')
   async completeDocumentsStep(@Body() dto: DocumentsStepDto, @Req() req: any) {
     const userId = req.user.id as number;
     return this.integrationRequestService.completeDocumentsStep(userId, dto);
