@@ -1,6 +1,7 @@
 import { IsArray, IsDateString } from "class-validator";
 
 export class DocumentsStepDto {
+  
     @IsArray()
     registrationCardFiles: string[];
   
@@ -9,5 +10,14 @@ export class DocumentsStepDto {
   
     @IsDateString()
     insuranceExpirationDate: string;
+
+    @IsArray()
+    technicalInspectionFiles: string[];
+
+    @IsDateString()
+    technicalInspectionExpirationDate: string;
+
+    @IsArray()
+    photos: string[];
   }
   
