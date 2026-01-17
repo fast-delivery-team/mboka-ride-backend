@@ -73,7 +73,7 @@ export class VehicleIntegrationRequest extends BaseEntity {
     @Column({ unique: true, nullable: true })
     registrationNumber: string;
 
-    @Column({ unique: true })
+    @Column({ unique: true, nullable: true })
     vin: string;
 
     @Column({ nullable: true })

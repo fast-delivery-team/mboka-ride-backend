@@ -4,6 +4,9 @@ import { DocumentType } from "../entities/vehicle-integration-request.entity";
 export class IdentityStepDto {
     @IsEnum(DocumentType)
     documentType: DocumentType;
+
+    @IsString()
+    documentTypeNumber: string;
   
     @IsArray()
     @IsString({ each: true })
