@@ -43,4 +43,10 @@ export class UserService {
     const existingUser = await this.userRepository.findOneBy({ phoneNumber });
     return existingUser;
   }
+
+  async findOneByUserId(userId: number) {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) throw new NotFoundException('User not found');
+    return user;
+  }
 }

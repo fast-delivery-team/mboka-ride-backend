@@ -6,26 +6,26 @@ import { UserService } from 'src/modules/user/user.service';
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
 
 @Injectable()
-export class JwtAccessStrategy extends PassportStrategy(Strategy, 'jwt-access') {
+export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
   constructor(
     private readonly configService: ConfigService,
     private readonly userService: UserService,
   ) {
-    const secret = configService.get<string>('JWT_ACCESS_SECRET');
+    const secret = configService.get<string>('JWT_REFRESH_SECRET');
     if (!secret) {
       throw new Error(
-        'JWT_ACCESS_SECRET is not defined in environment variables',
+        'JWT_REFRESH_SECRET is not defined in environment variables',
       );
     }
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromBodyField('refreshToken'),
       ignoreExpiration: false,
       secretOrKey: secret,
     });
   }
 
   async validate(payload: JwtPayload) {
-    if (payload.type && payload.type !== 'access') {
+    if (payload.type !== 'refresh') {
       throw new UnauthorizedException('Invalid token type');
     }
 
