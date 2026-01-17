@@ -6,6 +6,9 @@ import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
 import { env } from 'src/config/env';
+import type { StringValue } from 'ms';
+
+
 
 @Injectable()
 export class AuthService {
@@ -33,11 +36,10 @@ export class AuthService {
 
     const payload: JwtPayload = { sub: newUser.id, email: newUser.email };
 
-    const token = this.generateJwtToken(payload);
-
+    const token = await this.generateTokens(payload);
     const userWithoutPassword = { ...newUser, password: undefined };
 
-    return { user: userWithoutPassword, token };
+    return { user: userWithoutPassword, ...token };
   }
 
   async login(loginDto: LoginDto) {
@@ -54,9 +56,9 @@ export class AuthService {
     }
 
     const payload: JwtPayload = { sub: user.id, email: user.email, type: 'access' };
-    const tokens = this.generateJwtToken(payload);
+    const tokens = await this.generateTokens(payload);
 
-    const userWithoutPassword = { ...user, password: undefined };
+    const userWithoutPassword = { ...user, password: null };
 
     return { user: userWithoutPassword, ...tokens };
   }
@@ -64,7 +66,7 @@ export class AuthService {
   async refreshToken(refreshToken: string) {
     try {
       const payload = this.jwtService.verify<JwtPayload>(refreshToken, {
-        secret: env.JWT_ACCESS_SECRET,
+        secret: env.JWT_REFRESH_SECRET,
       });
 
       if (payload.type !== 'refresh') {
@@ -77,7 +79,7 @@ export class AuthService {
       }
 
       const newPayload: JwtPayload = { sub: user.id, email: user.email, type: 'access' };
-      const tokens = await this.generateJwtToken(newPayload);
+      const tokens = await this.generateTokens(newPayload);
 
       return tokens;
     } catch (error) {
@@ -96,8 +98,35 @@ export class AuthService {
     return bcrypt.compare(plainTextPassword, hashedPassword);
   }
 
-  private generateJwtToken(payload: JwtPayload) {
-    const accessToken = this.jwtService.sign(payload);
-    return { accessToken };
+  private async generateTokens(payload: JwtPayload) {
+    const accessTokenPayload: Omit<JwtPayload, 'type'> & { type: 'access' } = {
+      ...payload,
+      type: 'access',
+    };
+  
+    const refreshTokenPayload: Omit<JwtPayload, 'type'> & { type: 'refresh' } = {
+      ...payload,
+      type: 'refresh',
+    };
+  
+    const accessExpiresIn: StringValue | number =
+      (env.JWT_ACCESS_EXPIRES_IN as StringValue) ?? '15m';
+  
+    const refreshExpiresIn: StringValue | number =
+      (env.JWT_REFRESH_EXPIRES_IN as StringValue) ?? '7d';
+  
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(accessTokenPayload, {
+        secret: env.JWT_ACCESS_SECRET,
+        expiresIn: accessExpiresIn,
+      }),
+      this.jwtService.signAsync(refreshTokenPayload, {
+        secret: env.JWT_REFRESH_SECRET,
+        expiresIn: refreshExpiresIn,
+      }),
+    ]);
+  
+    return { accessToken, refreshToken };
   }
+  
 }

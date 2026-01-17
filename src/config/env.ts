@@ -46,6 +46,14 @@ const envSchema = v.object({
         v.pipe(
         v.string()
     ), '15m'),
+    JWT_REFRESH_SECRET: v.pipe(
+        v.string(),
+        v.minLength(1, 'JWT_REFRESH_SECRET is required'),
+    ),
+    JWT_REFRESH_EXPIRES_IN: v.optional(
+        v.pipe(
+        v.string()
+    ), '7d'),
     ENV_FILE: v.pipe(
         v.string(),
         v.minLength(1, 'Environment file must be at least 1 character long')
@@ -64,6 +72,8 @@ const parsedEnv = ()=>{
             DB_PASSWORD: process.env.DB_PASSWORD,
             DB_NAME: process.env.DB_NAME,
             JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET,
+            JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
+            JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN,
             JWT_ACCESS_EXPIRES_IN:process.env.JWT_ACCESS_EXPIRES_IN,
             ENV_FILE: process.env.ENV_FILE,
         });
