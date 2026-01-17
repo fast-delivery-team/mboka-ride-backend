@@ -4,11 +4,12 @@ import { IntegrationRequestController } from './integration-request.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { VehicleIntegrationRequest } from './entities/vehicle-integration-request.entity';
 import { UserModule } from '../user/user.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   controllers: [IntegrationRequestController],
   providers: [IntegrationRequestService],
-  imports: [TypeOrmModule.forFeature([VehicleIntegrationRequest]), UserModule],
+  imports: [TypeOrmModule.forFeature([VehicleIntegrationRequest]), UserModule, AuthModule],
   exports: [IntegrationRequestService],
 })
 export class IntegrationRequestModule {}

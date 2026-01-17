@@ -1,10 +1,12 @@
-import { Body, Controller, Param, Post, Req } from '@nestjs/common';
+import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { IntegrationRequestService } from './integration-request.service';
 import { IdentityStepDto } from './dto/identity-step-dto';
 import { DocumentsStepDto } from './dto/documents-step-dto';
 import { VehicleStepDto } from './dto/vehicle-step-dto';
+import { JwtAccessGuard } from '../auth/strategy/jwt-access.guard';
 
 @Controller('integration-request')
+@UseGuards(JwtAccessGuard)
 export class IntegrationRequestController {
   constructor(private readonly integrationRequestService: IntegrationRequestService) {}
 
