@@ -4,14 +4,14 @@ export class UpdateVehicleIntegrationRequestModelByMakingAllOptionalFOrDrafting1
     name = 'UpdateVehicleIntegrationRequestModelByMakingAllOptionalFOrDrafting1767933567166'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "vehicle_integration_request" ADD "documentTypeNumber" character varying`);
+        // Modifier documentTypeNumber pour la rendre nullable (elle existe déjà depuis la migration précédente)
+        await queryRunner.query(`ALTER TABLE "vehicle_integration_request" ALTER COLUMN "documentTypeNumber" DROP NOT NULL`);
         await queryRunner.query(`ALTER TABLE "vehicle_integration_request" ALTER COLUMN "isFirstRequest" DROP NOT NULL`);
         await queryRunner.query(`ALTER TABLE "vehicle_integration_request" ALTER COLUMN "documentType" DROP NOT NULL`);
         await queryRunner.query(`ALTER TABLE "vehicle_integration_request" ALTER COLUMN "identityFiles" DROP NOT NULL`);
         await queryRunner.query(`ALTER TABLE "vehicle_integration_request" ALTER COLUMN "identityFilesExpirationDate" DROP NOT NULL`);
         await queryRunner.query(`ALTER TABLE "vehicle_integration_request" ALTER COLUMN "registrationNumber" DROP NOT NULL`);
-        await queryRunner.query(`ALTER TABLE "vehicle_integration_request" ADD CONSTRAINT "UQ_d01bd43a6f321f1ad3a4814c407" UNIQUE ("registrationNumber")`);
-        await queryRunner.query(`ALTER TABLE "vehicle_integration_request" ADD CONSTRAINT "UQ_a54a691ff7b232ed57f780d8932" UNIQUE ("vin")`);
+        // Les contraintes UNIQUE pour registrationNumber et vin existent déjà depuis la migration 1767928807925
         await queryRunner.query(`ALTER TABLE "vehicle_integration_request" ALTER COLUMN "brand" DROP NOT NULL`);
         await queryRunner.query(`ALTER TABLE "vehicle_integration_request" ALTER COLUMN "model" DROP NOT NULL`);
         await queryRunner.query(`ALTER TABLE "vehicle_integration_request" ALTER COLUMN "year" DROP NOT NULL`);
@@ -41,14 +41,14 @@ export class UpdateVehicleIntegrationRequestModelByMakingAllOptionalFOrDrafting1
         await queryRunner.query(`ALTER TABLE "vehicle_integration_request" ALTER COLUMN "year" SET NOT NULL`);
         await queryRunner.query(`ALTER TABLE "vehicle_integration_request" ALTER COLUMN "model" SET NOT NULL`);
         await queryRunner.query(`ALTER TABLE "vehicle_integration_request" ALTER COLUMN "brand" SET NOT NULL`);
-        await queryRunner.query(`ALTER TABLE "vehicle_integration_request" DROP CONSTRAINT "UQ_a54a691ff7b232ed57f780d8932"`);
-        await queryRunner.query(`ALTER TABLE "vehicle_integration_request" DROP CONSTRAINT "UQ_d01bd43a6f321f1ad3a4814c407"`);
+        // Ne pas supprimer les contraintes UNIQUE car elles sont nécessaires pour d'autres migrations
         await queryRunner.query(`ALTER TABLE "vehicle_integration_request" ALTER COLUMN "registrationNumber" SET NOT NULL`);
         await queryRunner.query(`ALTER TABLE "vehicle_integration_request" ALTER COLUMN "identityFilesExpirationDate" SET NOT NULL`);
         await queryRunner.query(`ALTER TABLE "vehicle_integration_request" ALTER COLUMN "identityFiles" SET NOT NULL`);
         await queryRunner.query(`ALTER TABLE "vehicle_integration_request" ALTER COLUMN "documentType" SET NOT NULL`);
         await queryRunner.query(`ALTER TABLE "vehicle_integration_request" ALTER COLUMN "isFirstRequest" SET NOT NULL`);
-        await queryRunner.query(`ALTER TABLE "vehicle_integration_request" DROP COLUMN "documentTypeNumber"`);
+        // Ne pas supprimer documentTypeNumber car elle est créée dans la migration 1767928807925
+        await queryRunner.query(`ALTER TABLE "vehicle_integration_request" ALTER COLUMN "documentTypeNumber" SET NOT NULL`);
     }
 
 }
