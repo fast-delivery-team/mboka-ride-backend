@@ -57,7 +57,33 @@ const envSchema = v.object({
     ENV_FILE: v.pipe(
         v.string(),
         v.minLength(1, 'Environment file must be at least 1 character long')
-    )
+    ),
+    SMTP_HOST: v.pipe(
+        v.string(),
+        v.minLength(1, 'SMTP_HOST is required'),
+    ),
+    SMTP_PORT: v.pipe(
+        v.number(),
+        v.minValue(1, 'SMTP_PORT is required'),
+    ),
+    SMTP_USER: v.pipe(
+        v.string(),
+        v.minLength(1, 'SMTP_USER is required'),
+    ),
+    SMTP_SECURE: v.boolean(),
+    SMTP_FROM: v.pipe(
+        v.string(),
+        v.minLength(1, 'SMTP_FROM is required'),
+    ),
+    SMTP_PASS: v.pipe(
+        v.string(),
+    ),
+    FRONTEND_URL: v.optional(v.pipe(
+            v.string(),
+            v.minLength(1, 'FRONTEND_URL is required'),
+        ),
+        'http://localhost:5174'
+    ),
 });
 
 const parsedEnv = ()=>{
@@ -76,6 +102,13 @@ const parsedEnv = ()=>{
             JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN,
             JWT_ACCESS_EXPIRES_IN:process.env.JWT_ACCESS_EXPIRES_IN,
             ENV_FILE: process.env.ENV_FILE,
+            SMTP_HOST: process.env.SMTP_HOST,
+            SMTP_PORT: Number(process.env.SMTP_PORT),
+            SMTP_SECURE: Boolean(process.env.SMTP_SECURE),
+            SMTP_USER: process.env.SMTP_USER,
+            SMTP_PASS: process.env.SMTP_PASS,
+            SMTP_FROM: process.env.SMTP_FROM,
+            FRONTEND_URL: process.env.FRONTEND_URL
         });
     } catch (error) {
         if(error instanceof v.ValiError){

@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
 import { UserService } from '../user/user.service';
@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
 import { env } from 'src/config/env';
 import type { StringValue } from 'ms';
+import { EmailService } from 'src/email/email.service';
 
 
 
@@ -15,6 +16,7 @@ export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
+    private readonly emailService: EmailService
   ) {}
 
   async registerUser(registerDto: RegisterDto) {
@@ -32,14 +34,70 @@ export class AuthService {
     const newUser = await this.userService.create({
       ...registerDto,
       password: hashedPassword,
+      isEmailVerified: false
     });
 
-    const payload: JwtPayload = { sub: newUser.id, email: newUser.email };
+    const activationToken = await this.generateActivationToken(newUser.id, newUser.email);
 
-    const token = await this.generateTokens(payload);
+    await this.emailService.sendActivationEmail(
+      newUser.email,
+      activationToken,
+      newUser.firstName,
+    );
+
     const userWithoutPassword = { ...newUser, password: undefined };
 
-    return { user: userWithoutPassword, ...token };
+    return {
+      user: userWithoutPassword,
+      message: 'Un email d\'activation a été envoyé à votre adresse email',
+    };
+  }
+
+  async activateAccount(token: string) {
+    try {
+      const payload = this.jwtService.verify<{ sub: number; email: string; type: 'activation' }>(
+        token,
+        {
+          secret: env.JWT_ACCESS_SECRET,
+        },
+      );
+
+      if (payload.type !== 'activation') {
+        throw new BadRequestException('Invalid activation token');
+      }
+
+      const user = await this.userService.findById(payload.sub);
+      if (!user) {
+        throw new BadRequestException('User not found');
+      }
+
+      if (user.isEmailVerified) {
+        throw new BadRequestException('Account already activated');
+      }
+
+      this.userService.update(user.id, { isEmailVerified: true });
+
+      return { message: 'Compte activé avec succès' };
+    } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        throw new BadRequestException('Le lien d\'activation a expiré');
+      }
+      throw new BadRequestException('Token d\'activation invalide');
+    }
+  }
+
+  
+  private async generateActivationToken(userId: number, email: string): Promise<string> {
+    const payload = {
+      sub: userId,
+      email,
+      type: 'activation' as const,
+    };
+
+    return this.jwtService.signAsync(payload, {
+      secret: env.JWT_ACCESS_SECRET,
+      expiresIn: '48h',
+    });
   }
 
   async login(loginDto: LoginDto) {
@@ -48,6 +106,10 @@ export class AuthService {
     const user = await this.userService.findOneByEmail(email);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
+    }
+
+    if(!user.isEmailVerified){
+      throw new UnauthorizedException('Veuillez activer votre compte en cliquant sur le lien reçu par email')
     }
 
     const isPasswordValid = await this.comparePasswords(password, user.password);
@@ -82,7 +144,7 @@ export class AuthService {
       const tokens = await this.generateTokens(newPayload);
 
       return tokens;
-    } catch (error) {
+    } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }
   }

@@ -27,4 +27,9 @@ export class AuthController {
   refresh(@Body() refreshTokenDto: RefreshTokenDto){
     return this.authService.refreshToken(refreshTokenDto.refreshToken);
   }
+
+  @Post('activate')
+  activateAccount(@Body() body: { token: string }){
+    return this.authService.activateAccount(body.token)
+  }
 }
