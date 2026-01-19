@@ -1,23 +1,26 @@
 import { registerAs } from '@nestjs/config';
 import { DatabaseConfig } from './database-config.types';
-import path from 'path';
+import { env } from '../env';
 
 export function getConfig(): DatabaseConfig {
+  if (env.NODE_ENV === 'production') {
+    return {
+      type: 'postgres',
+      url: env.DATABASE_URL,
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    };
+  }
+
   return {
     type: 'postgres',
-    host: process.env.DB_HOSTNAME,
-    port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 5432,
-    username: process.env.DB_USERNAME,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    entities: [
-      path.join(__dirname, '..', '..', 'modules/**/entities/*.entity{.ts,.js}'),
-    ],
-    migrations: [path.join(__dirname, '..', '..', 'migrations/**/*{.ts,.js}')],
-    logging: process.env.NODE_ENV !== 'production',
+    host: env.DB_HOSTNAME,
+    port: Number(env.DB_PORT),
+    username: env.DB_USERNAME,
+    password: env.DB_PASSWORD,
+    database: env.DB_NAME,
   };
 }
 
-export default registerAs('database', () => {
-  return getConfig();
-});
+export default registerAs('database', getConfig);
