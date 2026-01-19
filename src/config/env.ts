@@ -84,6 +84,18 @@ const envSchema = v.object({
         ),
         'http://localhost:5174'
     ),
+    CLOUDINARY_CLOUD_NAME: v.pipe(
+        v.string(),
+        v.minLength(1, 'CLOUDINARY_CLOUD_NAME is required'),
+    ),
+    CLOUDINARY_API_KEY: v.pipe(
+        v.string(),
+        v.minLength(1, 'CLOUDINARY_API_KEY is required'),
+    ),
+    CLOUDINARY_API_SECRET: v.pipe(
+        v.string(),
+        v.minLength(1, 'CLOUDINARY_API_SECRET is required'),
+    ),
 });
 
 const parsedEnv = ()=>{
@@ -108,7 +120,10 @@ const parsedEnv = ()=>{
             SMTP_USER: process.env.SMTP_USER,
             SMTP_PASS: process.env.SMTP_PASS,
             SMTP_FROM: process.env.SMTP_FROM,
-            FRONTEND_URL: process.env.FRONTEND_URL
+            FRONTEND_URL: process.env.FRONTEND_URL,
+            CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+            CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
+            CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
         });
     } catch (error) {
         if(error instanceof v.ValiError){

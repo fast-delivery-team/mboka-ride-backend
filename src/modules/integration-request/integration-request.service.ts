@@ -7,13 +7,14 @@ import { IdentityStepDto } from './dto/identity-step-dto';
 import { UserService } from '../user/user.service';
 import { VehicleStepDto } from './dto/vehicle-step-dto';
 import { DocumentsStepDto } from './dto/documents-step-dto';
-
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 @Injectable()
 export class IntegrationRequestService {
 
     constructor(
         @InjectRepository(VehicleIntegrationRequest) private readonly vehicleIntegrationRequestRepository: Repository<VehicleIntegrationRequest>,
-        private readonly userService: UserService,  
+        private readonly userService: UserService,
+        private readonly cloudinaryService: CloudinaryService,
     ) {}
 
     private validateStepCompletion(
@@ -58,13 +59,16 @@ export class IntegrationRequestService {
         });
     }
 
-    async createIntegration(dto: IdentityStepDto, userId: number) {
+    async createIntegration(dto: Omit<IdentityStepDto, 'identityFiles'>, identityFiles: Express.Multer.File[], userId: number) {
         const user = await this.userService.findById(userId);
         if (!user) throw new NotFoundException();
+
+        const identityFileUrls = await this.cloudinaryService.uploadMultipleFiles(identityFiles);
       
         const request = this.vehicleIntegrationRequestRepository.create({
           userId,
           ...dto,
+          identityFiles: identityFileUrls,
           identityFilesExpirationDate: new Date(dto.identityFilesExpirationDate),
           currentStep: IntegrationStep.IDENTITY,
           status: RequestStatus.DRAFT,
@@ -92,7 +96,7 @@ export class IntegrationRequestService {
           dto.registrationNumber,
           dto.vin,
         );
-        if (duplicate) throw new ConflictException('Véhicule déjà enregistré');
+        if (duplicate) throw new ConflictException('Le vin ou le numéro d\'immatriculation est déjà enregistré');
       
         Object.assign(existingRequestForUser, dto);
         this.validateStepCompletion(existingRequestForUser, IntegrationStep.VEHICLE);
@@ -105,6 +109,12 @@ export class IntegrationRequestService {
     async completeDocumentsStep(
         userId: number,
         dto: DocumentsStepDto,
+        files: {
+          registrationCardFiles?: Express.Multer.File[],
+          insuranceFiles?: Express.Multer.File[],
+          technicalInspectionFiles?: Express.Multer.File[],
+          photos?: Express.Multer.File[],
+        }
       ) {
         await this.userService.findOneByUserId(userId);
         const existingRequestForUser = await this.vehicleIntegrationRequestRepository.findOneBy({ userId });
@@ -113,8 +123,33 @@ export class IntegrationRequestService {
         if (existingRequestForUser.currentStep !== IntegrationStep.VEHICLE) {
           throw new BadRequestException('Étape documents non autorisée');
         }
+
+        const [registrationCardUrls, insuranceUrls, technicalInspectionUrls, photosUrls] = await Promise.all([
+          files.registrationCardFiles 
+              ? this.cloudinaryService.uploadMultipleFiles(files.registrationCardFiles)
+              : Promise.resolve([]),
+          files.insuranceFiles 
+              ? this.cloudinaryService.uploadMultipleFiles(files.insuranceFiles)
+              : Promise.resolve([]),
+          files.technicalInspectionFiles 
+              ? this.cloudinaryService.uploadMultipleFiles(files.technicalInspectionFiles)
+              : Promise.resolve([]),
+          files.photos 
+              ? this.cloudinaryService.uploadMultipleFiles(files.photos)
+              : Promise.resolve([]),
+          ]);
+
       
-        Object.assign(existingRequestForUser, dto);
+        Object.assign(existingRequestForUser, {
+            ...dto,
+            registrationCardFiles: registrationCardUrls,
+            insuranceFiles: insuranceUrls,
+            technicalInspectionFiles: technicalInspectionUrls,
+            photos: photosUrls,
+            insuranceExpirationDate: new Date(dto.insuranceExpirationDate),
+            technicalInspectionExpirationDate: new Date(dto.technicalInspectionExpirationDate),
+        });
+
         this.validateStepCompletion(existingRequestForUser, IntegrationStep.DOCUMENTS);
       
         existingRequestForUser.currentStep = IntegrationStep.DOCUMENTS;
@@ -122,4 +157,34 @@ export class IntegrationRequestService {
       
         return this.vehicleIntegrationRequestRepository.save(existingRequestForUser);
     }
+
+    async findById(id: number) {
+      const request = await this.vehicleIntegrationRequestRepository.findOne({
+        where: { id },
+        relations: ['user'],
+      });
+      if (!request) {
+        throw new NotFoundException('Demande d\'intégration non trouvée');
+      }
+      return request;
+    }
+  
+    async findByUserId(userId: number) {
+      const request = await this.vehicleIntegrationRequestRepository.findOne({
+        where: { userId },
+        relations: ['user'],
+        order: { createdAt: 'DESC' },
+      });
+      if (!request) {
+        throw new NotFoundException('Aucune demande d\'intégration trouvée pour cet utilisateur');
+      }
+      return request;
+    }
+  
+    // async findAll() {
+    //   return await this.vehicleIntegrationRequestRepository.find({
+    //     relations: ['user'],
+    //     order: { createdAt: 'DESC' },
+    //   });
+    // }
 }
