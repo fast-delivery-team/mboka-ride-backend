@@ -1,8 +1,8 @@
 import { registerAs } from '@nestjs/config';
-import { DatabaseConfig } from './database-config.types';
+import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { env } from '../env';
 
-export function getConfig(): DatabaseConfig {
+export function getConfig(): TypeOrmModuleOptions {
   if (env.NODE_ENV === 'production') {
     return {
       type: 'postgres',
@@ -10,6 +10,8 @@ export function getConfig(): DatabaseConfig {
       ssl: {
         rejectUnauthorized: false,
       },
+      autoLoadEntities: true,
+      synchronize: false,
     };
   }
 
@@ -20,6 +22,8 @@ export function getConfig(): DatabaseConfig {
     username: env.DB_USERNAME,
     password: env.DB_PASSWORD,
     database: env.DB_NAME,
+    autoLoadEntities: true,
+    synchronize: false,
   };
 }
 
