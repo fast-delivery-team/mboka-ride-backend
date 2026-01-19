@@ -11,7 +11,7 @@ export class EmailService {
     const secure = this.configService.get<boolean>('SMTP_SECURE') ?? (port === 465);
 
     this.transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
       port: port,
       secure: secure,
       auth: {
