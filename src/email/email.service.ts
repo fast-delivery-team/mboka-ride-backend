@@ -7,14 +7,26 @@ export class EmailService {
   private readonly transporter: nodemailer.Transporter;
 
   constructor(private readonly configService: ConfigService) {
+    const port = this.configService.get<number>('SMTP_PORT') || 587;
+    const secure = this.configService.get<boolean>('SMTP_SECURE') ?? (port === 465);
+
     this.transporter = nodemailer.createTransport({
-      host: this.configService.get<string>('SMTP_HOST'),
-      port: this.configService.get<number>('SMTP_PORT') || 587,
-      secure: this.configService.get<boolean>('SMTP_SECURE') || false,
+      service: 'gmail',
+      port: port,
+      secure: secure,
       auth: {
         user: this.configService.get<string>('SMTP_USER'),
         pass: this.configService.get<string>('SMTP_PASS'),
       },
+      tls: {
+        rejectUnauthorized: this.configService.get<string>('NODE_ENV') !== 'production',
+        ciphers: 'SSLv3',
+      },
+      ...(this.configService.get<string>('NODE_ENV') === 'development' && {
+        requireTLS: false,
+        debug: true,
+        logger: true,
+      }),
     });
   }
 
@@ -48,6 +60,11 @@ export class EmailService {
       `,
     };
 
-    return await this.transporter.sendMail(mailOptions);
+    try {
+      return await this.transporter.sendMail(mailOptions);
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi de l\'email:', error);
+      throw error;
+    }
   }
 }

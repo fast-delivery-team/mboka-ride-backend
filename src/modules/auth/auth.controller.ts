@@ -7,7 +7,7 @@ import { RefreshTokenDto } from './dto/refresh.dto';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 
 @UseGuards(ThrottlerGuard)
-@Throttle({ default: { ttl: 60000, limit: 2 } })
+@Throttle({ default: { ttl: 60000, limit: 10 } })
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
