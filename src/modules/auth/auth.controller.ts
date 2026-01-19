@@ -4,7 +4,10 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtRefreshGuard } from './strategy/jwt-refresh.guard';
 import { RefreshTokenDto } from './dto/refresh.dto';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 
+@UseGuards(ThrottlerGuard)
+@Throttle({ default: { ttl: 60000, limit: 10 } })
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -23,5 +26,10 @@ export class AuthController {
   @UseGuards(JwtRefreshGuard)
   refresh(@Body() refreshTokenDto: RefreshTokenDto){
     return this.authService.refreshToken(refreshTokenDto.refreshToken);
+  }
+
+  @Post('activate')
+  activateAccount(@Body() body: { token: string }){
+    return this.authService.activateAccount(body.token)
   }
 }

@@ -4,7 +4,10 @@ import { IdentityStepDto } from './dto/identity-step-dto';
 import { DocumentsStepDto } from './dto/documents-step-dto';
 import { VehicleStepDto } from './dto/vehicle-step-dto';
 import { JwtAccessGuard } from '../auth/strategy/jwt-access.guard';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 
+@UseGuards(ThrottlerGuard)
+@Throttle({ default: { ttl: 60000, limit: 10 } })
 @Controller('integration-request')
 @UseGuards(JwtAccessGuard)
 export class IntegrationRequestController {

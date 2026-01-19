@@ -25,9 +25,10 @@ export class UserService {
     if (!user) throw new NotFoundException('User not found');
     return user;
   }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user with ${JSON.stringify(updateUserDto)}`;
+  
+  async update(id: number, updateUserDto: UpdateUserDto){
+    await this.userRepository.update(id, updateUserDto)
+    return this.findById(id)
   }
 
   remove(id: number) {
