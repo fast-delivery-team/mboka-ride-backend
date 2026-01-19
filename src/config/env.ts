@@ -150,8 +150,7 @@ const parsedEnv = () => {
     }
   
     return env;
-  };
-  
+};
 
 export const env = parsedEnv();
 
