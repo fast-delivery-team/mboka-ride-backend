@@ -11,7 +11,7 @@ export function getConfig(): TypeOrmModuleOptions {
         rejectUnauthorized: false,
       },
       autoLoadEntities: true,
-      synchronize: false,
+      synchronize: true,
     };
   }
 
