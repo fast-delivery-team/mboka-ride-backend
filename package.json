@@ -25,7 +25,14 @@
     "migration:revert": "pnpm typeorm migration:revert",
     "migration:show": "pnpm typeorm migration:show",
     "schema:sync": "pnpm typeorm schema:sync",
-    "schema:drop": "pnpm typeorm schema:drop"
+    "schema:drop": "pnpm typeorm schema:drop",
+    "docker:build": "docker build -t mboka-ride-backend .",
+    "docker:run": "docker run -p 3000:3000 --env-file .env.production mboka-ride-backend",
+    "docker:compose:up": "docker-compose up -d",
+    "docker:compose:down": "docker-compose down",
+    "docker:compose:logs": "docker-compose logs -f",
+    "docker:compose:dev:up": "docker-compose -f docker-compose.dev.yml up -d",
+    "docker:compose:dev:down": "docker-compose -f docker-compose.dev.yml down"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
