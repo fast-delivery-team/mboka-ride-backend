@@ -12,7 +12,6 @@ const AppDataSource = new DataSource({
         ssl: {
           rejectUnauthorized: false,
         },
-        autoLoadEntities: true,
       }
     : {
         host: env.DB_HOSTNAME,
@@ -20,13 +19,11 @@ const AppDataSource = new DataSource({
         username: env.DB_USERNAME,
         password: env.DB_PASSWORD,
         database: env.DB_NAME,
-        autoLoadEntities: true
       }),
 
   entities: [__dirname + '/../../**/*.entity{.ts,.js}'],
   migrations: [__dirname + '/../../migrations/*{.ts,.js}'],
   synchronize: false,
-  // logging: !isProd,
 });
 
 export default AppDataSource;
