@@ -1,3 +1,3 @@
-import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
+import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
-export type DatabaseConfig = PostgresConnectionOptions;
+export type DatabaseConfig = TypeOrmModuleOptions;
