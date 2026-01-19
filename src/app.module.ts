@@ -7,13 +7,14 @@ import { DatabaseConfig } from './config/database/database-config.types';
 import { AuthModule } from './modules/auth/auth.module';
 import { IntegrationRequestModule } from './modules/integration-request/integration-request.module';
 import { EmailModule } from './email/email.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       load: [databaseConfig],
-      // envFilePath: ['.env'],
+      envFilePath: ['.env'],
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -24,6 +25,7 @@ import { EmailModule } from './email/email.module';
     AuthModule,
     IntegrationRequestModule,
     EmailModule,
+    CloudinaryModule,
   ],
 })
 export class AppModule {}

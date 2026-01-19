@@ -1,4 +1,4 @@
-import { IsEnum, IsArray, IsString, IsDateString } from "class-validator";
+import { IsEnum, IsString, IsDateString } from "class-validator";
 import { DocumentType } from "../entities/vehicle-integration-request.entity";
 
 export class IdentityStepDto {
@@ -7,10 +7,6 @@ export class IdentityStepDto {
 
     @IsString()
     documentTypeNumber: string;
-  
-    @IsArray()
-    @IsString({ each: true })
-    identityFiles: string[];
   
     @IsDateString()
     identityFilesExpirationDate: string;
