@@ -1,222 +1,358 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Mboka Ride Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend API pour la plateforme Mboka Ride - Application de gestion de véhicules et intégration de concessionnaires.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 📋 Description
 
-## Description
+API REST construite avec NestJS permettant la gestion des utilisateurs, l'authentification JWT avec refresh tokens, et le processus d'intégration de véhicules avec upload de documents vers Cloudinary.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 🚀 Technologies
 
-## Project setup
+- **Framework**: NestJS
+- **Language**: TypeScript
+- **Database**: PostgreSQL (TypeORM)
+- **Authentication**: JWT (Access + Refresh Tokens)
+- **File Storage**: Cloudinary
+- **Email**: Nodemailer (SMTP)
+- **Security**: Helmet, Compression, Rate Limiting (Throttler)
+- **Package Manager**: pnpm
+
+## 📦 Prérequis
+
+- Node.js 20+
+- pnpm
+- PostgreSQL 16+
+- Docker & Docker Compose (optionnel, pour le développement local)
+
+## 🔧 Installation
+
+### 1. Cloner le repository
 
 ```bash
-$ pnpm install
+git clone <repository-url>
+cd mboka-ride-backend
 ```
 
-## Database Setup
+### 2. Installer les dépendances
 
-### Prerequisites
+```bash
+pnpm install
+```
 
-- PostgreSQL installed and running on your system
-- Database credentials (host, port, username, password, database name)
+### 3. Configuration des variables d'environnement
 
-### Environment Variables
-
-Create a `.env` file in the root directory with the following database configuration:
+Créer un fichier `.env` à la racine du projet :
 
 ```env
-# Database Configuration
-DB_HOST=localhost
+# Database
+DB_HOSTNAME=localhost
 DB_PORT=5432
 DB_USERNAME=your_username
 DB_PASSWORD=your_password
-DB_DATABASE=mboka_ride
-DB_SYNCHRONIZE=false
+DB_NAME=mboka_ride_db
 
-# Environment
+# Application
+PORT=3000
 NODE_ENV=development
+CORS_ORIGIN=http://localhost:5174
+
+# JWT
+JWT_ACCESS_SECRET=your-super-secret-access-key
+JWT_ACCESS_EXPIRES_IN=15m
+JWT_REFRESH_SECRET=your-super-secret-refresh-key
+JWT_REFRESH_EXPIRES_IN=7d
+
+# SMTP (Email)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+SMTP_FROM=your-email@gmail.com
+
+# Frontend URL
+FRONTEND_URL=http://localhost:5174
+
+# Cloudinary
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
 ```
 
-**Important Notes:**
+**⚠️ Important**: Ne commitez jamais le fichier `.env` (déjà dans `.gitignore`)
 
-- `DB_SYNCHRONIZE` should be `false` in production to prevent accidental schema changes
-- In development, you can set `DB_SYNCHRONIZE=true` to auto-sync schema (not recommended for production)
-- For production environments, SSL is automatically enabled
+## 🗄️ Configuration de la Base de Données
 
-### Database Initialization
+### Créer la base de données
 
-1. **Create the database** (if it doesn't exist):
+```bash
+# Se connecter à PostgreSQL
+psql -U postgres
 
-   ```bash
-   # Connect to PostgreSQL
-   psql -U postgres
+# Créer la base de données
+CREATE DATABASE mboka_ride_db;
+```
 
-   # Create database
-   CREATE DATABASE mboka_ride;
-   ```
+### Exécuter les migrations
 
-2. **Run migrations** to set up the schema:
-   ```bash
-   $ pnpm run migration:run
-   ```
+```bash
+# Générer une nouvelle migration
+pnpm run migration:generate src/migrations/MigrationName
 
-### TypeORM Commands
+# Exécuter les migrations
+pnpm run migration:run
 
-The following scripts are available for database management:
+# Revenir en arrière (revert dernière migration)
+pnpm run migration:revert
 
-#### Migrations
+# Voir le statut des migrations
+pnpm run migration:show
+```
 
-- **Generate a new migration**:
+## 🏃 Développement Local
 
-  ```bash
-  $ pnpm run migration:generate src/migrations/MigrationName
-  ```
+### Sans Docker
 
-- **Run pending migrations**:
+```bash
+# Mode développement (watch mode)
+pnpm run dev
 
-  ```bash
-  $ pnpm run migration:run
-  ```
+# Mode production
+pnpm run build
+pnpm run start:prod
+```
 
-- **Revert last migration**:
+L'API sera accessible sur `http://localhost:3000`
 
-  ```bash
-  $ pnpm run migration:revert
-  ```
+### Avec Docker (Recommandé)
 
-- **Show migration status**:
-  ```bash
-  $ pnpm run migration:show
-  ```
+#### 1. Vérifier que le fichier `.env` est créé
 
-#### Schema Operations
+Assurez-vous d'avoir un fichier `.env` avec toutes les variables nécessaires (voir section Configuration).
 
-- **Synchronize schema** (Development only - auto-creates tables based on entities):
+#### 2. Lancer les containers
 
-  ```bash
-  $ pnpm run schema:sync
-  ```
+```bash
+# Construire et lancer les services
+docker-compose up -d
 
-- **Drop entire schema**:
-  ```bash
-  $ pnpm run schema:drop
-  ```
+# Voir les logs
+docker-compose logs -f
 
-### Development vs Production
+# Arrêter les services
+docker-compose down
 
-**Development:**
+# Arrêter et supprimer les volumes (⚠️ supprime les données)
+docker-compose down -v
+```
 
-- `NODE_ENV=development`
-- `DB_SYNCHRONIZE` can be set to `true` for rapid prototyping (use with caution)
-- SQL queries are logged to console
-- SSL is disabled by default
+#### 3. Vérifier que tout fonctionne
 
-**Production:**
+```bash
+# Voir les containers actifs
+docker ps
 
-- `NODE_ENV=production`
-- `DB_SYNCHRONIZE` must be `false` (always use migrations)
-- SQL logging is disabled
-- SSL is automatically enabled
+# Voir les logs de l'application
+docker-compose logs -f app
 
-### Creating Entities
+# Voir les logs de PostgreSQL
+docker-compose logs -f postgres
+```
 
-Entities should be placed in the `src/modules` directory with the `.entity.ts` extension. Example:
+#### 4. Tester l'API
 
-```typescript
-import { Entity, Column, PrimaryGeneratedColumn, BaseEntity } from 'typeorm';
+```bash
+# Test simple
+curl http://localhost:3000/api/v1
 
-@Entity()
-export class User extend BaseEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+# Ou utiliser Postman/Insomnia
+```
 
-  @Column()
-  name: string;
+## 📡 API Endpoints
+
+Base URL: `http://localhost:3000/api/v1`
+
+### Authentification (`/auth`)
+
+| Méthode | Endpoint | Description | Auth |
+|---------|----------|-------------|------|
+| POST | `/auth/register` | Inscription utilisateur | ❌ |
+| POST | `/auth/login` | Connexion (retourne access + refresh tokens) | ❌ |
+| POST | `/auth/refresh` | Rafraîchir le access token | ✅ Refresh Token |
+| POST | `/auth/activate` | Activer le compte (avec token d'activation) | ❌ |
+
+**Body pour `/auth/register`**:
+```json
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john@example.com",
+  "phoneNumber": "0123456789",
+  "password": "password123"
 }
 ```
 
-TypeORM will automatically discover entities matching the pattern `**/*.entity{.ts,.js}`.
-
-## Compile and run the project
-
-```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+**Body pour `/auth/login`**:
+```json
+{
+  "email": "john@example.com",
+  "password": "password123"
+}
 ```
 
-## Run tests
-
-```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+**Réponse `/auth/login`**:
+```json
+{
+  "user": { ... },
+  "accessToken": "eyJhbGc...",
+  "refreshToken": "eyJhbGc..."
+}
 ```
 
-## Deployment
+### Intégration de Véhicules (`/integration-request`)
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+**Tous les endpoints nécessitent un Access Token (Bearer Token)**
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| POST | `/integration-request/vehicle/identity-step` | Étape 1: Envoyer les documents d'identité (multipart/form-data) |
+| PUT | `/integration-request/vehicle/vehicle-step` | Étape 2: Informations du véhicule |
+| PUT | `/integration-request/vehicle/documents-step` | Étape 3: Documents du véhicule (multipart/form-data) |
+| GET | `/integration-request/my-request` | Récupérer ma demande d'intégration |
+| GET | `/integration-request/:id` | Récupérer une demande par ID |
 
-```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+**Headers requis pour les endpoints protégés**:
+```
+Authorization: Bearer <access_token>
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+**Exemple POST `/integration-request/vehicle/identity-step`** (multipart/form-data):
+- `documentType`: "CNI" | "PASSPORT" | "PERMIS_DE_CONDUIRE"
+- `documentTypeNumber`: string
+- `identityFilesExpirationDate`: "2025-12-31"
+- `identityFiles`: File[] (max 5 fichiers)
 
-## Resources
+**Exemple PUT `/integration-request/vehicle/documents-step`** (multipart/form-data):
+- `insuranceExpirationDate`: "2025-12-31"
+- `technicalInspectionExpirationDate`: "2025-12-31"
+- `registrationCardFiles`: File[] (max 5)
+- `insuranceFiles`: File[] (max 5)
+- `technicalInspectionFiles`: File[] (max 5)
+- `photos`: File[] (max 5)
 
-Check out a few resources that may come in handy when working with NestJS:
+### Utilisateurs (`/user`)
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/user` | Liste des utilisateurs |
+| GET | `/user/:id` | Détails d'un utilisateur |
+| POST | `/user` | Créer un utilisateur |
+| PATCH | `/user/:id` | Modifier un utilisateur |
+| DELETE | `/user/:id` | Supprimer un utilisateur |
 
-## Support
+## 🔐 Sécurité
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+- **Rate Limiting**: 10 requêtes par minute (configurable)
+- **Helmet**: Protection des headers HTTP
+- **CORS**: Configuré via `CORS_ORIGIN`
+- **JWT**: Access tokens (15min) + Refresh tokens (7 jours)
+- **Password Hashing**: bcrypt (10 rounds)
+- **Email Verification**: Activation de compte par email
 
-## Stay in touch
+## 📁 Structure du Projet
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```
+src/
+├── modules/
+│   ├── auth/              # Authentification (login, register, refresh)
+│   ├── user/              # Gestion des utilisateurs
+│   └── integration-request/  # Intégration de véhicules
+├── cloudinary/            # Service Cloudinary (upload fichiers)
+├── email/                 # Service d'envoi d'emails
+├── config/
+│   ├── env.ts            # Validation des variables d'environnement
+│   └── database/         # Configuration TypeORM
+├── main.ts               # Point d'entrée
+└── app.module.ts         # Module racine
+```
 
-## License
+## 🐳 Déploiement avec Docker
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### Build de l'image
+
+```bash
+docker build -t mboka-ride-backend .
+```
+
+### Utilisation de docker-compose
+
+Le fichier `docker-compose.yml` configure :
+- **PostgreSQL**: Base de données
+- **App**: Application NestJS
+
+Les migrations s'exécutent automatiquement au démarrage du container.
+
+### Variables d'environnement en production
+
+Pour le déploiement sur Render ou autres plateformes, configurez les variables d'environnement dans l'interface de la plateforme (pas besoin de fichier `.env`).
+
+## 🧪 Tests
+
+```bash
+# Tests unitaires
+pnpm run test
+
+# Tests e2e
+pnpm run test:e2e
+
+# Coverage
+pnpm run test:cov
+```
+
+## 📝 Scripts Disponibles
+
+```bash
+# Développement
+pnpm run dev              # Mode watch
+pnpm run start:prod       # Production
+
+# Base de données
+pnpm run migration:generate  # Générer migration
+pnpm run migration:run       # Exécuter migrations
+pnpm run migration:revert    # Revert migration
+pnpm run migration:show      # Statut migrations
+
+# Docker
+pnpm run docker:build        # Build image
+pnpm run docker:compose:up   # Lancer avec docker-compose
+pnpm run docker:compose:down # Arrêter
+pnpm run docker:compose:logs # Voir les logs
+```
+
+## 🔍 Dépannage
+
+### Erreur: "Nest can't resolve dependencies"
+- Vérifier que tous les modules sont correctement importés dans `app.module.ts`
+- Vérifier que les services sont exportés depuis leurs modules respectifs
+
+### Erreur: "Could not find TypeScript configuration"
+- Vérifier que `tsconfig.json` n'est pas dans `.dockerignore`
+
+### Erreur: PostgreSQL unhealthy
+- Vérifier que les variables `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME` sont définies dans `.env`
+- Vérifier les logs: `docker-compose logs postgres`
+
+### Erreur: Cloudinary "unknown api_key"
+- Vérifier que `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` sont correctement définis
+- Retirer les guillemets autour des valeurs dans `.env`
+
+## 📚 Ressources
+
+- [NestJS Documentation](https://docs.nestjs.com)
+- [TypeORM Documentation](https://typeorm.io)
+- [Cloudinary Documentation](https://cloudinary.com/documentation)
+
+## 📄 License
+mbokaride has all right resrved
+```
+
